@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String         @id @default(uuid())
+  telegramId        BigInt         @unique
+  username          String?
+  firstName         String?
+  lastName          String?
+  notificationDays  Int            @default(3) // за сколько дней уведомлять
+  notificationTime  String         @default("09:00") // время уведомлений HH:mm
+  timezone          String         @default("UTC")
+  subscriptions     Subscription[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([telegramId])
+}
+
+model Subscription {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  price           Float
+  currency        String   @default("RUB")
+  billingCycle    String   // monthly, yearly
+  nextBillingDate DateTime
+  category        String?
+  icon            String?
+  color           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([nextBillingDate])
+  @@index([isActive])
+}
